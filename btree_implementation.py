@@ -1,3 +1,6 @@
+import pickle
+
+
 class KEY:
     def __init__(self, term):
         self.term = term
@@ -38,7 +41,7 @@ class NODE:
                 else:
                     l = mid+1
             else:
-                if l==r:
+                if l==mid:
                     return {'search':False, 'node': self, 'pos': mid}
                 else:
                     r = mid -1
@@ -111,6 +114,7 @@ class BTREE:
                 if res['pos'] == -1 or res['node'].children == []:
                     break
                 
+                # print(res, res['node'].keys, res['node'].children)
                 temp = res['node'].children[res['pos']]
 
         
@@ -190,5 +194,133 @@ B.insert({'term':'m', 'doc_id':4})
 
 
 
+B.insert({'term':'n', 'doc_id':1})
+B.insert({'term':'o', 'doc_id':2})
+B.insert({'term':'p', 'doc_id':3})
+B.insert({'term':'q', 'doc_id':4})
+B.insert({'term':'r', 'doc_id':4})
+B.insert({'term':'s', 'doc_id':4})
+B.insert({'term':'t', 'doc_id':4})
+B.insert({'term':'u', 'doc_id':4})
+B.insert({'term':'v', 'doc_id':4})
+B.insert({'term':'w', 'doc_id':4})
+B.insert({'term':'x', 'doc_id':4})
+B.insert({'term':'y', 'doc_id':4})
+B.insert({'term':'z', 'doc_id':4})
+
+
+
+B.insert({'term':'ab', 'doc_id':1})
+B.insert({'term':'bc', 'doc_id':2})
+B.insert({'term':'cd', 'doc_id':3})
+B.insert({'term':'de', 'doc_id':4})
+B.insert({'term':'ef', 'doc_id':4})
+B.insert({'term':'fg', 'doc_id':4})
+B.insert({'term':'gh', 'doc_id':4})
+B.insert({'term':'hi', 'doc_id':4})
+B.insert({'term':'ij', 'doc_id':4})
+B.insert({'term':'jk', 'doc_id':4})
+B.insert({'term':'kl', 'doc_id':4})
+B.insert({'term':'lm', 'doc_id':4})
+B.insert({'term':'mn', 'doc_id':4})
+
+
+B.insert({'term':'no', 'doc_id':1})
+B.insert({'term':'op', 'doc_id':2})
+B.insert({'term':'pq', 'doc_id':3})
+B.insert({'term':'qr', 'doc_id':4})
+B.insert({'term':'rs', 'doc_id':4})
+B.insert({'term':'st', 'doc_id':4})
+B.insert({'term':'tu', 'doc_id':4})
+B.insert({'term':'uv', 'doc_id':4})
+B.insert({'term':'vw', 'doc_id':4})
+B.insert({'term':'wx', 'doc_id':4})
+B.insert({'term':'xy', 'doc_id':4})
+B.insert({'term':'yz', 'doc_id':4})
+B.insert({'term':'za', 'doc_id':4})
+
+
+B.insert({'term':'abc', 'doc_id':1})
+B.insert({'term':'bcd', 'doc_id':2})
+B.insert({'term':'cde', 'doc_id':3})
+B.insert({'term':'def', 'doc_id':4})
+B.insert({'term':'efg', 'doc_id':4})
+B.insert({'term':'fgh', 'doc_id':4})
+B.insert({'term':'ghi', 'doc_id':4})
+B.insert({'term':'hij', 'doc_id':4})
+B.insert({'term':'ijk', 'doc_id':4})
+B.insert({'term':'jkl', 'doc_id':4})
+B.insert({'term':'klm', 'doc_id':4})
+B.insert({'term':'lmn', 'doc_id':4})
+B.insert({'term':'mno', 'doc_id':4})
+
+
+B.insert({'term':'nop', 'doc_id':1})
+B.insert({'term':'opq', 'doc_id':2})
+B.insert({'term':'pqr', 'doc_id':3})
+B.insert({'term':'qrs', 'doc_id':4})
+B.insert({'term':'rst', 'doc_id':4})
+B.insert({'term':'stu', 'doc_id':4})
+B.insert({'term':'tuv', 'doc_id':4})
+B.insert({'term':'uvw', 'doc_id':4})
+B.insert({'term':'vwx', 'doc_id':4})
+B.insert({'term':'wxy', 'doc_id':4})
+B.insert({'term':'xyz', 'doc_id':4})
+B.insert({'term':'yza', 'doc_id':4})
+B.insert({'term':'zab', 'doc_id':4})
+
+
+
+B.insert({'term':'abcd', 'doc_id':1})
+B.insert({'term':'bcde', 'doc_id':2})
+B.insert({'term':'cdef', 'doc_id':3})
+B.insert({'term':'defg', 'doc_id':4})
+B.insert({'term':'efgh', 'doc_id':4})
+B.insert({'term':'fghi', 'doc_id':4})
+B.insert({'term':'ghij', 'doc_id':4})
+B.insert({'term':'hijk', 'doc_id':4})
+B.insert({'term':'ijkl', 'doc_id':4})
+B.insert({'term':'jklm', 'doc_id':4})
+B.insert({'term':'klmn', 'doc_id':4})
+B.insert({'term':'lmno', 'doc_id':4})
+B.insert({'term':'mnop', 'doc_id':4})
+
+
+B.insert({'term':'nopq', 'doc_id':1})
+B.insert({'term':'opqr', 'doc_id':2})
+B.insert({'term':'pqrs', 'doc_id':3})
+B.insert({'term':'qrst', 'doc_id':4})
+B.insert({'term':'rstu', 'doc_id':4})
+B.insert({'term':'stuv', 'doc_id':4})
+B.insert({'term':'tuvw', 'doc_id':4})
+B.insert({'term':'uvwx', 'doc_id':4})
+B.insert({'term':'vwxy', 'doc_id':4})
+B.insert({'term':'wxyz', 'doc_id':4})
+B.insert({'term':'xyza', 'doc_id':4})
+B.insert({'term':'yzab', 'doc_id':4})
+B.insert({'term':'zabc', 'doc_id':4})
+
+
+
+
+
+
+
+######################################################
+
+
+
+
+
+
+
 
 B.print_tree()
+
+
+
+with open('btree', 'wb') as outfile:
+    pickle.dump(B, outfile)
+
+
+
