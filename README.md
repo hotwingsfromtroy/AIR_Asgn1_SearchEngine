@@ -13,3 +13,4 @@ Check avro and protobuff for this.
 
 
 Of course, all of this is useless if it turns out that a plain dictionary(without implementing btree) works out better. Don't know if there are optimizations to take care of cases with large number keys.
+Python dictionary is implemented using hash tables. Unless our btree functions are really inefficient, it should work out better that hash table method for large data sets. We can either stick to btree and say we're keeing scalbility in mind or just work with the hash table one.
