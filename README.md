@@ -10,3 +10,6 @@ Version III - nested dictionaries, with json as the local storage. Size of test 
 
 Serialization better than json. User readability isn't a concern here. We can go with nested dictionaries with pickling. Maybe another method of serialization if it turns out to be better.
 Check avro and protobuff for this.
+
+
+Of course, all of this is useless if it turns out that a plain dictionary(without implementing btree) works out better. Don't know if there are optimizations to take care of cases with large number keys.
