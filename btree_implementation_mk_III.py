@@ -179,11 +179,11 @@ def print_tree(tree):
 
 
 B = BTree(4)
-# tree_insert(B, {'term':'a', 'doc_id':1})
-# tree_insert(B, {'term':'b', 'doc_id':2})
-# tree_insert(B, {'term':'c', 'doc_id':3})
-# tree_insert(B, {'term':'d', 'doc_id':4})
-# tree_insert(B, {'term':'e', 'doc_id':4})
+tree_insert(B, {'term':'a', 'doc_id':1})
+tree_insert(B, {'term':'b', 'doc_id':2})
+tree_insert(B, {'term':'c', 'doc_id':3})
+tree_insert(B, {'term':'d', 'doc_id':4})
+tree_insert(B, {'term':'e', 'doc_id':4})
 tree_insert(B, {'term':'f', 'doc_id':4})
 tree_insert(B, {'term':'g', 'doc_id':4})
 tree_insert(B, {'term':'h', 'doc_id':4})
