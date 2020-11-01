@@ -176,107 +176,14 @@ def print_tree(tree):
 
 
 
-# class BTREE:
-    
-#     def __init__(self, degree):
-#         self.max_keys = degree-1
-#         self.max_children = degree
-#         self.n = 0
-#         self.root = Node()
-
-
-#     def insert(self, stuff):
-#         self.n += 1
-#         term = stuff['term']
-#         node_stack = []
-#         temp = self.root
-#         res = ''
-#         while(1):
-#             res = node_search(temp, term)
-#             node_stack.append(res)
-#             if res['search']:
-#                 # node_stack.append(res)
-#                 break
-#             else:
-
-#                 if res['pos'] == -1 or res['node']['children'] == []:
-#                     break
-                
-#                 # print(res, res['node'].keys, res['node'].children)
-#                 temp = res['node']['children'][res['pos']]
-
-        
-#         temp = None
-
-#         if node_stack[-1]['search']:
-#             req_key = node_stack[-1]['node']['keys'][node_stack[-1]['pos']]
-#             req_key['doc_id_freq'] += 1
-#             req_key['posting_list'].append(stuff['doc_id'])
-#             return
-
-#         # print(node_stack)
-
-#         while(node_stack):
-#             node = node_stack.pop()
-#             if node['pos'] == -1 or node['node']['children'] == []:
-#                 new_key = Key(term)
-#                 new_key['doc_id_freq'] += 1
-#                 new_key['posting_list'].append(stuff['doc_id'])
-
-#                 temp = node_vanilla_add(node['node'], new_key, self.max_keys)
-
-#                 if temp and not node_stack :
-#                     new_node = Node()
-#                     new_node['keys'].append(temp['key'])
-#                     new_node['children'].append(temp['child1'])
-#                     new_node['children'].append(temp['child2'])
-#                     self.root = new_node
-#                     break
-    
-#                 continue
-                
-#             if temp:
-#                 # node = node_stack.pop()
-#                 temp = node_complex_add(node['node'], temp, self.max_keys)
-#                 if temp and not node_stack:
-#                     new_node = Node()
-#                     new_node['keys'].append(temp['key'])
-#                     new_node['children'].append(temp['child1'])
-#                     new_node['children'].append(temp['child2'])
-#                     self.root = new_node
-#                     break
-
-#     def search(self, term):
-        
-#         temp = self.root
-#         while(1):
-#             res = node_search(temp, term)
-#             if res['search']:
-#                 return {'node':res['node'], 'pos':res['pos']}
-#             else:
-#                 if res['pos'] == -1 or res['node']['children'] == []:
-#                     return None
-                
-#                 temp = res['node']['children'][res['pos']]
-
-#     def print_tree(self):
-#         print_node(self.root, 0)
-
-    
-#     def get_inverted_index(self):
-#         return {
-#             'root' : self.root
-#         }
-
-
 
 
 B = BTree(4)
-tree_insert(B, {'term':'a', 'doc_id':1})
-tree_insert(B, {'term':'b', 'doc_id':2})
-tree_insert(B, {'term':'c', 'doc_id':3})
-tree_insert(B, {'term':'d', 'doc_id':4})
-tree_insert(B, {'term':'e', 'doc_id':4})
+# tree_insert(B, {'term':'a', 'doc_id':1})
+# tree_insert(B, {'term':'b', 'doc_id':2})
+# tree_insert(B, {'term':'c', 'doc_id':3})
+# tree_insert(B, {'term':'d', 'doc_id':4})
+# tree_insert(B, {'term':'e', 'doc_id':4})
 tree_insert(B, {'term':'f', 'doc_id':4})
 tree_insert(B, {'term':'g', 'doc_id':4})
 tree_insert(B, {'term':'h', 'doc_id':4})
