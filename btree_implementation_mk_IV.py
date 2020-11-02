@@ -4,7 +4,7 @@ import pickle
         
 
 def Key(term):
-    # return [term, 'doc_id_freq':0, 'posting_list':[]}
+    # return [term, 'doc_freq':0, 'posting_list':[]}
     return [term, 0, []]
 
 
@@ -317,14 +317,14 @@ tree_insert(B, ['zabc', 4])
 
 
 
-print_tree(B)
+# print_tree(B)
 
 
 ans = tree_search(B, 'abcded')
 print(ans)
 
 
-# print(B['root'])
+print(B['root'])
 
 with open('btree4', 'wb') as outfile:
     pickle.dump(B, outfile)
