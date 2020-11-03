@@ -90,12 +90,12 @@ def node_complex_add(node, new_stuff, limit):
 
 
 def BTree(degree):
-    return {'max_keys':degree-1, 'n':0, 'root':Node()}
+    return {'max_keys':degree-1, 'n':0, 'doc_count':0, 'root':Node()}
 
 
 
 def tree_insert(tree, stuff):
-    tree['n'] += 1
+    # tree['n'] += 1
     term = stuff[0]
     node_res_stack = []
     temp = tree['root']
@@ -131,7 +131,7 @@ def tree_insert(tree, stuff):
             new_key = Key(term)
             new_key[1] += 1
             new_key[2].append(stuff[1])
-
+            tree['n'] += 1
             temp = node_vanilla_add(res['node'], new_key, tree['max_keys'])
 
             if temp and not node_res_stack :
@@ -175,140 +175,133 @@ def print_tree(tree):
         print_node(tree['root'], 0)
 
 
+def store_tree(tree, path, filename):
+    with open(path+filename, 'wb') as outfile:
+        pickle.dump(tree, outfile)
+
+
+# B = BTree(4)
+# tree_insert(B, ['a', 1])
+# tree_insert(B, ['b', 2])
+# tree_insert(B, ['c', 3])
+# tree_insert(B, ['d', 4])
+# tree_insert(B, ['e', 4])
+# tree_insert(B, ['f', 4])
+# tree_insert(B, ['g', 4])
+# tree_insert(B, ['h', 4])
+# tree_insert(B, ['i', 4])
+# tree_insert(B, ['j', 4])
+# tree_insert(B, ['k', 4])
+# tree_insert(B, ['l', 4])
+# tree_insert(B, ['m', 4])
 
 
 
-
-B = BTree(4)
-tree_insert(B, ['a', 1])
-tree_insert(B, ['b', 2])
-tree_insert(B, ['c', 3])
-tree_insert(B, ['d', 4])
-tree_insert(B, ['e', 4])
-tree_insert(B, ['f', 4])
-tree_insert(B, ['g', 4])
-tree_insert(B, ['h', 4])
-tree_insert(B, ['i', 4])
-tree_insert(B, ['j', 4])
-tree_insert(B, ['k', 4])
-tree_insert(B, ['l', 4])
-tree_insert(B, ['m', 4])
+# tree_insert(B, ['n', 1])
+# tree_insert(B, ['o', 2])
+# tree_insert(B, ['p', 3])
+# tree_insert(B, ['q', 4])
+# tree_insert(B, ['r', 4])
+# tree_insert(B, ['s', 4])
+# tree_insert(B, ['t', 4])
+# tree_insert(B, ['u', 4])
+# tree_insert(B, ['v', 4])
+# tree_insert(B, ['w', 4])
+# tree_insert(B, ['x', 4])
+# tree_insert(B, ['y', 4])
+# tree_insert(B, ['z', 4])
 
 
 
-tree_insert(B, ['n', 1])
-tree_insert(B, ['o', 2])
-tree_insert(B, ['p', 3])
-tree_insert(B, ['q', 4])
-tree_insert(B, ['r', 4])
-tree_insert(B, ['s', 4])
-tree_insert(B, ['t', 4])
-tree_insert(B, ['u', 4])
-tree_insert(B, ['v', 4])
-tree_insert(B, ['w', 4])
-tree_insert(B, ['x', 4])
-tree_insert(B, ['y', 4])
-tree_insert(B, ['z', 4])
+# tree_insert(B, ['ab', 1])
+# tree_insert(B, ['bc', 2])
+# tree_insert(B, ['cd', 3])
+# tree_insert(B, ['de', 4])
+# tree_insert(B, ['ef', 4])
+# tree_insert(B, ['fg', 4])
+# tree_insert(B, ['gh', 4])
+# tree_insert(B, ['hi', 4])
+# tree_insert(B, ['ij', 4])
+# tree_insert(B, ['jk', 4])
+# tree_insert(B, ['kl', 4])
+# tree_insert(B, ['lm', 4])
+# tree_insert(B, ['mn', 4])
+
+
+# tree_insert(B, ['no', 1])
+# tree_insert(B, ['op', 2])
+# tree_insert(B, ['pq', 3])
+# tree_insert(B, ['qr', 4])
+# tree_insert(B, ['rs', 4])
+# tree_insert(B, ['st', 4])
+# tree_insert(B, ['tu', 4])
+# tree_insert(B, ['uv', 4])
+# tree_insert(B, ['vw', 4])
+# tree_insert(B, ['wx', 4])
+# tree_insert(B, ['xy', 4])
+# tree_insert(B, ['yz', 4])
+# tree_insert(B, ['za', 4])
+
+
+# tree_insert(B, ['abc', 1])
+# tree_insert(B, ['bcd', 2])
+# tree_insert(B, ['cde', 3])
+# tree_insert(B, ['def', 4])
+# tree_insert(B, ['efg', 4])
+# tree_insert(B, ['fgh', 4])
+# tree_insert(B, ['ghi', 4])
+# tree_insert(B, ['hij', 4])
+# tree_insert(B, ['ijk', 4])
+# tree_insert(B, ['jkl', 4])
+# tree_insert(B, ['klm', 4])
+# tree_insert(B, ['lmn', 4])
+# tree_insert(B, ['mno', 4])
+
+
+# tree_insert(B, ['nop', 1])
+# tree_insert(B, ['opq', 2])
+# tree_insert(B, ['pqr', 3])
+# tree_insert(B, ['qrs', 4])
+# tree_insert(B, ['rst', 4])
+# tree_insert(B, ['stu', 4])
+# tree_insert(B, ['tuv', 4])
+# tree_insert(B, ['uvw', 4])
+# tree_insert(B, ['vwx', 4])
+# tree_insert(B, ['wxy', 4])
+# tree_insert(B, ['xyz', 4])
+# tree_insert(B, ['yza', 4])
+# tree_insert(B, ['zab', 4])
 
 
 
-tree_insert(B, ['ab', 1])
-tree_insert(B, ['bc', 2])
-tree_insert(B, ['cd', 3])
-tree_insert(B, ['de', 4])
-tree_insert(B, ['ef', 4])
-tree_insert(B, ['fg', 4])
-tree_insert(B, ['gh', 4])
-tree_insert(B, ['hi', 4])
-tree_insert(B, ['ij', 4])
-tree_insert(B, ['jk', 4])
-tree_insert(B, ['kl', 4])
-tree_insert(B, ['lm', 4])
-tree_insert(B, ['mn', 4])
+# tree_insert(B, ['abcd', 1])
+# tree_insert(B, ['bcde', 2])
+# tree_insert(B, ['cdef', 3])
+# tree_insert(B, ['defg', 4])
+# tree_insert(B, ['efgh', 4])
+# tree_insert(B, ['fghi', 4])
+# tree_insert(B, ['ghij', 4])
+# tree_insert(B, ['hijk', 4])
+# tree_insert(B, ['ijkl', 4])
+# tree_insert(B, ['jklm', 4])
+# tree_insert(B, ['klmn', 4])
+# tree_insert(B, ['lmno', 4])
+# tree_insert(B, ['mnop', 4])
 
 
-tree_insert(B, ['no', 1])
-tree_insert(B, ['op', 2])
-tree_insert(B, ['pq', 3])
-tree_insert(B, ['qr', 4])
-tree_insert(B, ['rs', 4])
-tree_insert(B, ['st', 4])
-tree_insert(B, ['tu', 4])
-tree_insert(B, ['uv', 4])
-tree_insert(B, ['vw', 4])
-tree_insert(B, ['wx', 4])
-tree_insert(B, ['xy', 4])
-tree_insert(B, ['yz', 4])
-tree_insert(B, ['za', 4])
-
-
-tree_insert(B, ['abc', 1])
-tree_insert(B, ['bcd', 2])
-tree_insert(B, ['cde', 3])
-tree_insert(B, ['def', 4])
-tree_insert(B, ['efg', 4])
-tree_insert(B, ['fgh', 4])
-tree_insert(B, ['ghi', 4])
-tree_insert(B, ['hij', 4])
-tree_insert(B, ['ijk', 4])
-tree_insert(B, ['jkl', 4])
-tree_insert(B, ['klm', 4])
-tree_insert(B, ['lmn', 4])
-tree_insert(B, ['mno', 4])
-
-
-tree_insert(B, ['nop', 1])
-tree_insert(B, ['opq', 2])
-tree_insert(B, ['pqr', 3])
-tree_insert(B, ['qrs', 4])
-tree_insert(B, ['rst', 4])
-tree_insert(B, ['stu', 4])
-tree_insert(B, ['tuv', 4])
-tree_insert(B, ['uvw', 4])
-tree_insert(B, ['vwx', 4])
-tree_insert(B, ['wxy', 4])
-tree_insert(B, ['xyz', 4])
-tree_insert(B, ['yza', 4])
-tree_insert(B, ['zab', 4])
-
-
-
-tree_insert(B, ['abcd', 1])
-tree_insert(B, ['bcde', 2])
-tree_insert(B, ['cdef', 3])
-tree_insert(B, ['defg', 4])
-tree_insert(B, ['efgh', 4])
-tree_insert(B, ['fghi', 4])
-tree_insert(B, ['ghij', 4])
-tree_insert(B, ['hijk', 4])
-tree_insert(B, ['ijkl', 4])
-tree_insert(B, ['jklm', 4])
-tree_insert(B, ['klmn', 4])
-tree_insert(B, ['lmno', 4])
-tree_insert(B, ['mnop', 4])
-
-
-tree_insert(B, ['nopq', 1])
-tree_insert(B, ['opqr', 2])
-tree_insert(B, ['pqrs', 3])
-tree_insert(B, ['qrst', 4])
-tree_insert(B, ['rstu', 4])
-tree_insert(B, ['stuv', 4])
-tree_insert(B, ['tuvw', 4])
-tree_insert(B, ['uvwx', 4])
-tree_insert(B, ['vwxy', 4])
-tree_insert(B, ['wxyz', 4])
-tree_insert(B, ['xyza', 4])
-tree_insert(B, ['yzab', 4])
-tree_insert(B, ['zabc', 4])
-
-
-
-
-
-
-
-######################################################
+# tree_insert(B, ['nopq', 1])
+# tree_insert(B, ['opqr', 2])
+# tree_insert(B, ['pqrs', 3])
+# tree_insert(B, ['qrst', 4])
+# tree_insert(B, ['rstu', 4])
+# tree_insert(B, ['stuv', 4])
+# tree_insert(B, ['tuvw', 4])
+# tree_insert(B, ['uvwx', 4])
+# tree_insert(B, ['vwxy', 4])
+# tree_insert(B, ['wxyz', 4])
+# tree_insert(B, ['xyza', 4])
+# tree_insert(B, ['yzab', 4])
+# tree_insert(B, ['zabc', 4])
 
 
 
@@ -316,18 +309,26 @@ tree_insert(B, ['zabc', 4])
 
 
 
-
-# print_tree(B)
-
-
-ans = tree_search(B, 'abcded')
-print(ans)
+# ######################################################
 
 
-print(B['root'])
 
-with open('btree4', 'wb') as outfile:
-    pickle.dump(B, outfile)
+
+
+
+
+
+# # print_tree(B)
+
+
+# ans = tree_search(B, 'abcded')
+# print(ans)
+
+
+# print(B['root'])
+
+# with open('btree4', 'wb') as outfile:
+#     pickle.dump(B, outfile)
 
 
 
