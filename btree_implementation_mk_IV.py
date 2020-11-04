@@ -1,34 +1,31 @@
-import json
 import pickle
 
-        
-
+#function to initialize new Key. contains term, document frequecy and posting list
 def Key(term):
     # return [term, 'doc_freq':0, 'posting_list':[]}
     return [term, 0, []]
 
-
+#function to initialize B-Tree node. Contains list of keys and list of children(which are nodes)
 def Node():
     # return {'keys':[], 'children':[]}
     return [[],[]]
 
-
+#function to print the keys of a node. Indentation is based on the depth of the node. Then print_node function is invoked for the children of the node.
 def print_node(node, tab):
     indent = ''.join(['-' for i in range(tab)])
     print(indent, end = '')
     for i in node[0]:
         print(i[0], end=' ')
-    # print('\n--------\n')
     print('\n')
     for i in node[1]:
-        
         print_node(i, tab+1)
-        # print('\n')
 
 
-
+#function to search for term in list of keys in node. Uses binary search.
+#if term is found returns dictionary with 'search' = True and 'pos' = index of found key in the list of keys.
+#if term is not found then return dictionary with 'search' = False and 'pos' = index of child node which might contain the term
+#if node is empty then return dictionary with 'search' = False and 'pos' = -1
 def node_search(node, term):
-
     l = 0; r = len(node[0])-1
     while(l<=r):
         mid = int((l+r)/2)
@@ -52,11 +49,14 @@ def node_search(node, term):
 
 
 
-
+#function to add new key to leaf node. Limit is the max number of keys allowed for the node.
 def node_vanilla_add(node, new_key, limit):
     node[0].append(new_key)
     node[0] = sorted(node[0], key= lambda x: x[0])
     l = len(node[0])
+
+    #if the addition of the new key makes list longer than limit, split the node.
+    #retrive new key and return it along with newly made child nodes.
     if l > limit:
         new_key = node[0][int(l/2)]
         child1 = Node()
@@ -66,12 +66,19 @@ def node_vanilla_add(node, new_key, limit):
         return {'key':new_key, 'child1':child1, 'child2':child2}
     return None
 
+
+#function to add new key along with new children which are the result of adding a key to a full leaf node(fron vanilla_add or complex_add)
 def node_complex_add(node, new_stuff, limit):
     node[0].append(new_stuff['key'])
     node[0] = sorted(node[0], key= lambda x: x[0])
     i = node[0].index(new_stuff['key'])
+
+    #adding child nodes into the appropriate location in the list of children
     node[1] = node[1][:i] + [new_stuff['child1'], new_stuff['child2']] + node[1][i+1:]
     l = len(node[0])
+
+    #if the addition of new key makes list longer than limit, split node
+    #retrive new key and return it along with newly made child nodes.
     if l > limit:
         mid = int(l/2)
         child1 = Node()
@@ -86,75 +93,92 @@ def node_complex_add(node, new_stuff, limit):
         
     return None
 
-
-
-
+#function to initialize B-Tree. contains maximum number of keys allowed per node, number of keys present in the tree,
+#number of documents(rows of the csv file) that were processed to insert into the tree, root node of the tree
 def BTree(degree):
     return {'max_keys':degree-1, 'n':0, 'doc_count':0, 'root':Node()}
 
 
-
+#function to add term and a tuple of doc_id and term frequency(w.r.t document) to the tree
 def tree_insert(tree, stuff):
-    # tree['n'] += 1
     term = stuff[0]
     node_res_stack = []
     temp = tree['root']
     res = ''
     while(1):
         res = node_search(temp, term)
+
+        #adding searched node into a stack
         node_res_stack.append(res)
         if res['search']:
-            # node_stack.append(res)
+            #if node with term is found
             break
         else:
-
+            #if the node is empty(no keys) or if there aren't any children(list of children is empty) then break
             if res['pos'] == -1 or res['node'][1] == []:
                 break
             
-            # print(res, res['node'].keys, res['node'].children)
+            #if 'search' is false and position of child node is returned then check child node.
             temp = res['node'][1][res['pos']]
 
     
     temp = None
 
+    #if the last node added to stack has the term
     if node_res_stack[-1]['search']:
+
+        #retrieving the appropriate key from the list of keys in the node
         req_key = node_res_stack[-1]['node'][0][node_res_stack[-1]['pos']]
+
+        #incrementing the doc_freq value
         req_key[1] += 1
+
+        #appending (document, term frequency) tuple to the posting list
         req_key[2].append(stuff[1])
         return
 
-    # print(node_stack)
-
     while(node_res_stack):
+        #pop the top of the stack
         res = node_res_stack.pop()
+
+        #if the last node is empty(this how it is for the root node) or has no children, i.e a leaf node
         if res['pos'] == -1 or res['node'][1] == []:
             new_key = Key(term)
             new_key[1] += 1
             new_key[2].append(stuff[1])
+
+            #incrementing the number of keys in the tree
             tree['n'] += 1
             temp = node_vanilla_add(res['node'], new_key, tree['max_keys'])
 
-            if temp and not node_res_stack :
-                new_node = Node()
-                new_node[0].append(temp['key'])
-                new_node[1].append(temp['child1'])
-                new_node[1].append(temp['child2'])
-                tree['root'] = new_node
+            #if temp isn't None and the stack is empty, i.e, new root node must be made
+            if temp:
+                if not node_res_stack :
+                    new_node = Node()
+                    new_node[0].append(temp['key'])
+                    new_node[1].append(temp['child1'])
+                    new_node[1].append(temp['child2'])
+                    tree['root'] = new_node
+                    break
+            else:
                 break
-
+        
             continue
             
         if temp:
-            # node = node_stack.pop()
             temp = node_complex_add(res['node'], temp, tree['max_keys'])
-            if temp and not node_res_stack:
-                new_node = Node()
-                new_node[0].append(temp['key'])
-                new_node[1].append(temp['child1'])
-                new_node[1].append(temp['child2'])
-                tree['root'] = new_node
-                break
 
+            #if temp isn't None and the stack is empty, i.e, new root node must be made
+            if temp:
+                if not node_res_stack:
+                    new_node = Node()
+                    new_node[0].append(temp['key'])
+                    new_node[1].append(temp['child1'])
+                    new_node[1].append(temp['child2'])
+                    tree['root'] = new_node
+                    break
+            else:
+                break
 
 def tree_search(tree, term):
         
@@ -162,7 +186,8 @@ def tree_search(tree, term):
     while(1):
         res = node_search(temp, term)
         if res['search']:
-            return {'node':res['node'], 'pos':res['pos']}
+            # return {'node':res['node'], 'pos':res['pos']}
+            return res['node'][0][res['pos']]
         else:
             if res['pos'] == -1 or res['node'][1] == []:
                 return None
