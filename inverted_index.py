@@ -1,54 +1,54 @@
 import pandas as pd
-
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-
 from os import listdir
-
 from btree_implementation_mk_IV import BTree, tree_insert, print_tree, store_tree
-
 from collections import Counter
 
-
-
-
-
-
-
-lem = WordNetLemmatizer()
+lem = WordNetLemmatizer() 
 stop_words = set(stopwords.words('english')) 
 
 
-
+#function to construct inverted index for all files in ./Data/TelevisionNews/ folder
 def construct_inverted_index():
+
+    #listdir gets list of files in the path
     blocks  = listdir('./Data/TelevisionNews/')
-    print(len(blocks))
+    # print(len(blocks))
 
 # block_num = 0
     for i in blocks:
+
+        #initialising B-Tree with degree 8. 8 was chosen arbitrarily. Can change if another degree works better.
         B = BTree(8)
 
         try:
+            #getting dataframe of info in csv file. It is within 'try' to make sure files with no content in them don't break the code.
             csv = pd.read_csv('./Data/TelevisionNews/'+i)
         except:
             continue
+
+        #doc_id based on the row number in the dataframe
         doc_id = 0
+
+        #checking for colums with snippets
         if 'Snippet' not in csv.columns:
             continue
+
+        #for each row in the csv file...
         for doc in csv['Snippet']:
-        # print(csv['Snippet'][0])
-            # print(word_tokenize(csv['Snippet'][0]))
+            #the snippet is tokenized, then stop words and non-alphanumeric words are removed from this list and the remaining words are lemmatized.
             temp = [ lem.lemmatize(x) for x in word_tokenize(doc) if x.isalnum() and x not in stop_words ]
+
+            #Counter makes a dictionary of words in temp as key and with their frequency as the value
             temp = Counter(temp)
             for term, count in temp.items(): 
+                #adding term, doc_id, and count to the tree
                 tree_insert(B, [term, (doc_id, count)])
-            
             doc_id +=1        
-        # print_tree(B)
-        # print(B)
-        print(i, i.split('.'))
+      
+        #pickle the constructed tree and store it in the ./InvertedIndex/ folder with the same name as the csv file
         store_tree(B, './InvertedIndex/', '.'.join(i.split('.')[:2]))
-        # block_num += 1
-        # if block_num==5:
-        #     break
+        print(i)
+
