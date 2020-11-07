@@ -13,7 +13,10 @@ filename = files[0]
 B = ''
 with open(path+filename, 'rb') as infile:
     B = pickle.load(infile)
-    print_tree(B)
 
+
+
+print_tree(B)
+# print_tree(B)
 #searching for the term '2016'
-print(tree_search(B, '2016'))
+print(tree_search(B, 'water'))
