@@ -10,9 +10,18 @@ lem = WordNetLemmatizer()
 stop_words = set(stopwords.words('english')) 
 
 
+def position_finder(list_of_words):
+    position_dict = dict()
+    for i in range(len(list_of_words)):
+        if list_of_words[i] not in position_dict.keys():
+            position_dict[list_of_words[i]] = []
+        position_dict[list_of_words[i]].append(i)
+    return position_dict
+    
+
 #function to construct inverted index for all files in ./Data/TelevisionNews/ folder
 def construct_inverted_index():
-
+    print('start')
     #listdir gets list of files in the path
     blocks  = listdir('./Data/TelevisionNews/')
     # print(len(blocks))
@@ -42,13 +51,24 @@ def construct_inverted_index():
             temp = [ lem.lemmatize(x) for x in word_tokenize(doc) if x.isalnum() and x not in stop_words ]
 
             #Counter makes a dictionary of words in temp as key and with their frequency as the value
-            temp = Counter(temp)
-            for term, count in temp.items(): 
+            # temp = Counter(temp)
+            # print(temp)
+            temp = position_finder(temp)
+            for term, position_list in temp.items(): 
                 #adding term, doc_id, and count to the tree
-                tree_insert(B, [term, (doc_id, count)])
+                tree_insert(B, [term, (doc_id, position_list)])
             doc_id +=1        
       
         #pickle the constructed tree and store it in the ./InvertedIndex/ folder with the same name as the csv file
         store_tree(B, './InvertedIndex/', '.'.join(i.split('.')[:2]))
-        print(i)
+        # print(i)
+    print('stop')
 
+
+import time
+
+tic = time.perf_counter()
+construct_inverted_index()
+toc = time.perf_counter()
+
+print(toc-tic)
