@@ -40,9 +40,9 @@ def get_tfidf_matrix(dataset):
     vectorized_docs = vectorizer.fit_transform(dataset)
     print(vectorized_docs)
     names = vectorizer.get_feature_names()
-    tfidf_matrix = pd.DataFrame.sparse.from_spmatrix(vectorized_docs).T
-    tfidf_matrix.index = names
-    return tfidf_matrix
+    tfidf_matrix = pd.DataFrame.sparse.from_spmatrix(vectorized_docs)
+    tfidf_matrix.columns = names
+    return tfidf_matrix, vectorizer
 
 
 #function to construct inverted index for all files in ./Data/TelevisionNews/ folder
@@ -89,13 +89,14 @@ def construct_inverted_index():
             doc_list.append(s)
             doc_map.append((i,doc_id))
         
-            temp_list = doc.split(' ')
+            # temp_list = temp_1.split(' ')
         
-            temp = position_finder(temp_list)
+            temp = position_finder(temp_1)
+            no_of_terms = len(temp_1)
 
             for term, position_list in temp.items():
                 #adding term, doc_id, and count to the tree
-                tree_insert(B, [term, (doc_id, position_list)])
+                tree_insert(B, [term, (doc_id, position_list, no_of_terms)])
             doc_id +=1
 
 
@@ -105,12 +106,16 @@ def construct_inverted_index():
     with open("document_mapping","wb") as outfile:
         pickle.dump(doc_map, outfile)
 
-    matrix = get_tfidf_matrix(doc_list)
+    matrix, vect = get_tfidf_matrix(doc_list)
     #print(matrix)
     print("constructed tfidf matrix")
     with open("tfidf_matrix","wb") as outfile:
         pickle.dump(matrix, outfile)
         print("Dumped matrix.")
+    
+    with open("tfidf_vectorizer","wb") as outfile:
+        pickle.dump(vect, outfile)
+        print("Dumped vectorizer.")
 
     print('stop')
 
