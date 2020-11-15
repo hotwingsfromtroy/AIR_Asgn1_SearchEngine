@@ -40,9 +40,8 @@ while(query!="exit"):
         isphrase = True
         
     
-    temp_query_1 = [lem.lemmatize(x) for x in word_tokenize(query) if x.isalnum() and x not in stop_words]
-    temp_query_2 = [i.lower() for i in temp_query_1]
-    result = rank(temp_query_2, isphrase = isphrase)
+    temp_query_1 = [lem.lemmatize(x.lower()) for x in word_tokenize(query) if x.isalnum() and x not in stop_words]
+    result = rank(temp_query_1, isphrase = isphrase)
     print(result)
 
     ids = result.index.values.tolist()

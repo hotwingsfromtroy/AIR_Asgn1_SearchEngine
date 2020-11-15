@@ -129,26 +129,17 @@ def freetext_query(query):        # free text query
                         doc = key[2][i][0]
                         docs.add(doc)
                         
+                    
+                    for doc in docs:
                         identifier = (filename+'.csv',doc)
+                        col = term
+                        row = doc_map.index(identifier)
+                        score = matrix[col][row]
 
-                        if identifier not in doc_scores:
-                            col = doc_map.index(identifier)
-                            doc_vector = [matrix.iloc[col]]
-                            # doc_vector = matrix[col].to_frame().T
-                            print(np.shape(doc_vector))
-                            doc_scores[identifier] = cosine_similarity(query_vector,doc_vector)
-                            print(doc_scores[identifier])
-                                    
-                    # for doc in docs:
-                    #     identifier = (filename+'.csv',doc)
-                    #     col = doc_map.index(identifier)
-                    #     row = term
-                    #     score = matrix[col][row]
-
-                    #     if identifier in doc_scores:
-                    #         doc_scores[identifier] += (score*score)
-                    #     else:
-                    #         doc_scores[identifier] = (score*score)
+                        if identifier in doc_scores:
+                            doc_scores[identifier] += score
+                        else:
+                            doc_scores[identifier] = score
                         #query -> malaysia sand dunes
                         #list -> [((MSNBC01, 2),0.534),((CNN02,4),0.765)]
 
