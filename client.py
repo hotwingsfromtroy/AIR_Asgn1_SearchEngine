@@ -15,6 +15,8 @@ from collections import Counter
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.tokenize import word_tokenize
 import time
+from word_error_correction import get_correction
+
 path = './InvertedIndex/'
 
 lem = WordNetLemmatizer()
@@ -26,6 +28,11 @@ files = listdir(path)
 
 data_path = './Data/TelevisionNews/'
 
+vocab = ''
+with open('tfidf_matrix', 'rb') as infile:
+    matrix = pickle.load(infile)
+#         # print(matrix.columns.tolist())
+    vocab_list = matrix.columns.tolist()
 
 
 query = input("Enter query: ")
@@ -41,7 +48,24 @@ while(query!="exit"):
         
     
     temp_query_1 = [lem.lemmatize(x.lower()) for x in word_tokenize(query) if x.isalnum() and x not in stop_words]
-    result = rank(temp_query_1, isphrase = isphrase)
+    
+    mod_query = []
+    for term in temp_query_1:
+        if term in vocab_list:
+            mod_query.append(term)
+        else:
+            corrections = get_correction(term, vocab_list, 3)
+            if corrections:
+                mod_query.append(list(corrections)[0])
+    
+    print('Fetching results for query ', end = '')
+    if isphrase:
+        print('phrase ', end = '')
+    
+    print('"'+ ' '.join(mod_query)+'"')
+    
+    
+    result = rank(mod_query, isphrase = isphrase)
     print(result)
 
     ids = result.index.values.tolist()
