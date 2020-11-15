@@ -58,13 +58,20 @@ while(query!="exit"):
             if corrections:
                 mod_query.append(list(corrections)[0])
     
+    
+    
+    if not mod_query:
+        print('Unable to compute. Task ditched.')
+        query = input("Enter query: ")
+        continue
+
+
     print('Fetching results for query ', end = '')
     if isphrase:
         print('phrase ', end = '')
     
     print('"'+ ' '.join(mod_query)+'"')
-    
-    
+
     result = rank(mod_query, isphrase = isphrase)
     print(result)
 
