@@ -51,22 +51,24 @@ loaded_values['vect_names'] = vect.get_feature_names()
 vocab_list = tfidf_m.columns.tolist()
 
 
+
 #MAIN MODULE
-query = input("Enter query: ")
+query = input("Enter Query (Enter 'P' for Phrase Queries. | Enter 'Exit' to exit.): ")
 while(query!="exit"):
     
     start = time.perf_counter()
 
-    if(query!="phrase"):
+    if(query.lower()!="p"):
         isphrase = False
     else:
-        query = input("Enter phrase: ")
+        query = input("Enter Phrase: ")
         isphrase = True
         
+    #Pre-process query.
     temp_query_1 = [lem.lemmatize(x.lower()) for x in word_tokenize(query) if x.isalnum() and x not in stop_words]
 
+    #???????
     mod_query = []
-    
     for term in temp_query_1:
         if term in vocab_list:
             mod_query.append(term)
@@ -75,21 +77,26 @@ while(query!="exit"):
             if corrections:
                 mod_query.append(list(corrections)[0])
     
-    
+    #??????????
     if not mod_query:
         print('Unable to find the correct term in')
         query = input("Enter query: ")
         continue
 
-
+    #Print the corrected query.
+    print()
     print('Fetching results for query ', end = '')
     if isphrase:
         print('phrase ', end = '')
-    
     print('"'+ ' '.join(mod_query)+'"')
     
+    #Find the ranked results.
     result = rank(mod_query, loaded_values, isphrase = isphrase)
+
+    #Get the document identifiers for the results.
     ids = result.index.values.tolist()
+
+    #Fetch the result snippets.
     snippets = fetch_snippets(ids)
 
     end = time.perf_counter()
