@@ -27,6 +27,8 @@ files = listdir(path)
 
 data_path = './Data/TelevisionNews/'
 
+
+#Read all the pickled data and store it in a dictionary.
 tfidf_m = ''
 with open("tfidf_matrix", "rb") as matrix_file:
     tfidf_m = pickle.load(matrix_file)
@@ -45,23 +47,27 @@ loaded_values['doc_map'] = doc_m
 loaded_values['vectorizer'] = vect
 loaded_values['vect_names'] = vect.get_feature_names()
 
+
+#Find the list of all words in the corpus.
 vocab_list = tfidf_m.columns.tolist()
 
+
+#MAIN MODULE
 query = input("Enter query: ")
 while(query!="exit"):
+    
     start = time.perf_counter()
 
     if(query!="phrase"):
         isphrase = False
-        
     else:
         query = input("Enter phrase: ")
         isphrase = True
         
-    
     temp_query_1 = [lem.lemmatize(x.lower()) for x in word_tokenize(query) if x.isalnum() and x not in stop_words]
 
     mod_query = []
+    
     for term in temp_query_1:
         if term in vocab_list:
             mod_query.append(term)
@@ -71,9 +77,8 @@ while(query!="exit"):
                 mod_query.append(list(corrections)[0])
     
     
-    
     if not mod_query:
-        print('Unable to compute. Task ditched.')
+        print('Unable to find the correct term in')
         query = input("Enter query: ")
         continue
 
@@ -85,11 +90,9 @@ while(query!="exit"):
     print('"'+ ' '.join(mod_query)+'"')
     
     result = rank(mod_query, loaded_values, isphrase = isphrase)
-    #print(result)
-
     ids = result.index.values.tolist()
-    #print(ids)
     snippets = fetch_snippets(ids)
+    
     end = time.perf_counter()
     
     for snippet in snippets:
