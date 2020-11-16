@@ -84,8 +84,8 @@ while(query!="exit"):
     
     # If all terms is query are discarded, print appropriate message and continue
     if not mod_query:
-        print('No results found!')
-        query = input("Enter query: ")
+        print('Sorry, no results were found.')
+        query = input("Enter Query (Enter 'P' for Phrase Queries. | Enter 'Exit' to exit.): ")
         continue
 
     #Print the corrected query.
@@ -94,6 +94,7 @@ while(query!="exit"):
     if isphrase:
         print('phrase ', end = '')
     print('"'+ ' '.join(mod_query)+'"')
+    print()
     
     #Find the ranked results.
     result = rank(mod_query, loaded_values, isphrase = isphrase)
@@ -114,7 +115,7 @@ while(query!="exit"):
     print("TOTAL TIME TAKEN TO RETRIEVE SEARCH RESULTS: ", end-start)
     print()
     print()
-    query = input("Enter query: ")
+    query = input("Enter Query (Enter 'P' for Phrase Queries. | Enter 'Exit' to exit.): ")
 
 
 
