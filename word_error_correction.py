@@ -1,9 +1,5 @@
-import pickle
-
-
-
+# calculating the Levenshtein Distance for two words with an upper cap on the number of allowed edits
 def get_edit_distance(word1, word2, max_dist):
-    # dp_matrix = 
     dp_prev = list(range(len(word2)+1))
     dp_curr = ''
     for i in range(len(word1)):
@@ -15,30 +11,34 @@ def get_edit_distance(word1, word2, max_dist):
                 dp_curr[j+1] = dp_prev[j]
             else:
                 dp_curr[j+1] = min([dp_curr[j], dp_prev[j], dp_prev[j+1]]) + 1
+            
+            # if any of the possible edits are less than the upper limit
             if dp_curr[j+1] < max_dist:
                 check = 0
         dp_prev = dp_curr
-        # print(dp_curr)
+   
+        # return -1 if word can't be converted to the other within the specified number of edits 
         if check:
             return -1
     
+    # return edit distance
     return dp_curr[-1]
 
 
-
-
-
-# x = get_edit_distance('edwind', 'steve', 2)
-# print(x)
-
-
+# get a set of corrections for a given word from a given vocabulary
+# max_dist indicated the max number of edits allowed for the convertion
 def get_correction(word, vocabulary, max_dist):
+    # set of possible corrections
     correction = set()
-    # max_dist = len(word)
     for _word in vocabulary:
         temp = get_edit_distance(word, _word, max_dist)
+        
+        # if word isn't within max_dist number of edit of _word, move on.
         if temp == -1:
             continue
+        
+        # if the number of edits is less than the specified limit, make that the new limit.
+        # remove all previous corrections from the set.
         if temp < max_dist:
             max_dist = temp
             correction = {_word}
@@ -46,30 +46,5 @@ def get_correction(word, vocabulary, max_dist):
         else:
             correction.add(_word)
     
+    # return the set of corrections
     return correction
-
-
-# import time
-# import multiprocessing
-
-# if __name__ == '__main__':
-#     with open('tfidf_matrix', 'rb') as infile:
-#         matrix = pickle.load(infile)
-#         # print(matrix.columns.tolist())
-#         vocab = matrix.columns.tolist()
-#         print('==================')
-#         # print(matrix.index)
-#         query = ['poltics', 'gushe', 'holp', 'tirrany', 'bivh', 'wut', 'kelp', 'jest', 'warming', 'ridiculous', 'sectumsempra']
-#         print('start')
-#         start = time.perf_counter()
-
-
-#         results = [get_correction(a, vocab, 2) for a in query]
-        
-        
-        
-#         for i in range(len(query)):
-#             print(query[i], results[i])
-#         end = time.perf_counter()
-#         print(end-start)
-
