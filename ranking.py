@@ -233,12 +233,14 @@ def rank(input, loaded_values, k = 10, isphrase = False):
 #Find the matching snippets in the CSV files based on the document identifiers.
 def fetch_snippets(identifiers):
     snippets = []
+
     for identifier in identifiers:
         file_addr = data_path+identifier[0]
         row_no = int(identifier[1])
         csv_file = pd.read_csv(file_addr)
         snippet = csv_file['Snippet'][row_no]
         snippets.append((identifier,snippet))
+        
     return snippets
 
 

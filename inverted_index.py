@@ -1,7 +1,6 @@
 import pickle
 import pandas as pd
 import nltk
-#nltk.download()
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -36,63 +35,44 @@ def position_finder(list_of_words):
     return temp
 
 
-def get_idf_matrix(terms, docs):
-    n = len(docs)
-    idf_dict = dict()
-    for term in terms:
-        no_of_docs = 0
-        for doc in docs:
-            if term in doc:
-                no_of_docs+=1
-        idf_dict[term] = np.log(n/no_of_docs)
-    
-    idf_matrix = pd.DataFrame.from_dict(idf_dict, orient = 'index')
-    
-    return idf_matrix
-
-    
+# Find the tf-idf matrix for all the terms and documents in the corpus.
 def get_tfidf_matrix(dataset):
     vectorizer = TfidfVectorizer(sublinear_tf=True)
     vectorized_docs = vectorizer.fit_transform(dataset)
-    print(vectorized_docs)
     names = vectorizer.get_feature_names()
     tfidf_matrix = pd.DataFrame.sparse.from_spmatrix(vectorized_docs)
     tfidf_matrix.columns = names
-    #get_idf_matrix(names,dataset)
-    return tfidf_matrix, names
+    return tfidf_matrix, vectorizer
 
 
-#function to construct inverted index for all files in ./Data/TelevisionNews/ folder
+
+# Construct individual inverted indices for all files in ./Data/TelevisionNews/
 def construct_inverted_index():
-    print('start')
-    #listdir gets list of files in the path
+    
+    #Get the list of files in the path.
     blocks  = listdir('./Data/TelevisionNews/')
-    # print(len(blocks))
 
-    doc_map = []
-# block_num = 0
-    doc_list = []
     for i in blocks:
-        #initialising B-Tree with degree 8. 8 was chosen arbitrarily. Can change if another degree works better.
+        
+        # Initialise B-Tree with degree 8 (chosen arbitrarily).
         B = BTree(8)
 
         try:
-            #getting dataframe of info in csv file. It is within 'try' to make sure files with no content in them don't break the code.
+            # Get the dataframe of info in csv file. 
             csv = pd.read_csv('./Data/TelevisionNews/'+i)
-            #print(i)
         except:
             continue
 
-        #doc_id based on the row number in the dataframe
+        #Row number in the dataframe.
         doc_id = 0
 
-        #checking for colums with snippets
+        #Check for columns with snippets
         if 'Snippet' not in csv.columns:
             continue
 
+        print('Started construction of inverted index for block ',i)
 
-        
-        #for each row in the csv file...
+        #Add documents in the file to its BTree.
         for doc in csv['Snippet']:
             #the snippet is tokenized, then stop words and non-alphanumeric words are removed from this list and the remaining words are lemmatized.
             temp_1 = [ lem.lemmatize(x) for x in word_tokenize(doc) if x.isalnum() and x not in stop_words ]
@@ -119,30 +99,39 @@ def construct_inverted_index():
 
         #pickle the constructed tree and store it in the ./InvertedIndex/ folder with the same name as the csv file
         store_tree(B, './InvertedIndex/', '.'.join(i.split('.')[:2]))
+        
+        print('Finished construction of inverted index for block ',i)
 
+
+def construct_matrix():
+
+    #Store the mapping of the unique document identifiers to their tf-idf indices.
     with open("document_mapping","wb") as outfile:
         pickle.dump(doc_map, outfile)
 
-    matrix, names = get_tfidf_matrix(doc_list)
-    #print(matrix)
-    print("constructed tfidf matrix")
+    print("Started matrix construction.")
+    #Get the tf-idf matrix.
+    matrix, vect = get_tfidf_matrix(doc_list)
+    print("Finished matrix construction.")
+
+    #Store the tf-idf matrix.
     with open("tfidf_matrix","wb") as outfile:
         pickle.dump(matrix, outfile)
-        print("Dumped matrix.")
-    
-    idf = get_idf_matrix(names,doc_list)
-    print(idf)
-    with open("idf_matrix","wb") as outfile:
-        pickle.dump(idf, outfile)
-        print("Dumped idf matrix.")
-    
-    # with open("tfidf_vectorizer","wb") as outfile:
-    #     pickle.dump(vect, outfile)
-    #     print("Dumped vectorizer.")
 
-    print('stop')
+    #Store the tf-idf vectorizer.
+    with open("tfidf_vectorizer","wb") as outfile:
+        pickle.dump(vect, outfile)
 
+
+#List containing the mapping of the unique document identifiers to their tf-idf matrix indices.
+doc_map = []
+doc_list = []
+
+print("STARTED PRE-PROCESSING.")
 construct_inverted_index()
+construct_matrix()
+print("FINISHED PRE-PROCESSING.")
+
 
 
 

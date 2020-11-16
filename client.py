@@ -5,7 +5,6 @@ from os import listdir
 import pickle
 import pandas as pd
 import nltk
-# nltk.download()
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -92,7 +91,7 @@ while(query!="exit"):
     result = rank(mod_query, loaded_values, isphrase = isphrase)
     ids = result.index.values.tolist()
     snippets = fetch_snippets(ids)
-    
+
     end = time.perf_counter()
     
     for snippet in snippets:
