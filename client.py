@@ -103,15 +103,6 @@ while(query!="exit"):
     query = input("Enter query: ")
 
 
-# df = dict ()
-# df['apple'] = 3.4
-# df['banana'] = 1.9
-# df['cherry'] = 2.6
-
-# df = pd.DataFrame.from_dict(df, orient = 'index', columns = ['Score'])
-# print(df)
-# df = df.sort_values('Score')
-# print(df)
 
 
 

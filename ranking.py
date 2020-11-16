@@ -64,9 +64,6 @@ def freetext_query(query, loaded_values, top = 10):        # free text query
 
 def phrase_query(query, loaded_values):
 
-    # tfidf = loaded_values['tfidf']
-    doc_map = loaded_values['doc_map']
-
     term_frequency = dict()
     query_length = len(query)
     docs = {}
@@ -78,10 +75,7 @@ def phrase_query(query, loaded_values):
 
         with open(path + filename, 'rb') as infile:
             B = pickle.load(infile)
-            common = []
             for term in query:
-                k = 0
-                docIDs = set()
                 key = tree_search(B, term)
                 if(key):
                     for x in key[2]:
@@ -173,9 +167,7 @@ def rank(input, loaded_values, top = 10, isphrase = False):
     else:
         scores = freetext_query(input, loaded_values)
     
-    start = time.perf_counter()
     df = pd.DataFrame.from_dict(scores, orient = "index",columns = ['Score'])
-    end = time.perf_counter()
    # print("Time to convert results to df: ", end-start)
     #df = df['Score'].apply(lambda x: math.sqrt(x))
     start = time.perf_counter()

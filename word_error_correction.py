@@ -72,3 +72,4 @@ def get_correction(word, vocabulary, max_dist):
 #             print(query[i], results[i])
 #         end = time.perf_counter()
 #         print(end-start)
+
