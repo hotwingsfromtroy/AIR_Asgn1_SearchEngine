@@ -26,6 +26,11 @@ files = listdir(path)
 
 data_path = './Data/TelevisionNews/'
 
+vocab = ''
+with open('tfidf_matrix', 'rb') as infile:
+    matrix = pickle.load(infile)
+#         # print(matrix.columns.tolist())
+    vocab_list = matrix.columns.tolist()
 
 #Read all the pickled data and store it in a dictionary.
 tfidf_m = ''
@@ -67,7 +72,7 @@ while(query!="exit"):
     #Pre-process query.
     temp_query_1 = [lem.lemmatize(x.lower()) for x in word_tokenize(query) if x.isalnum() and x not in stop_words]
 
-    #???????
+    # Getting modified query where faulty query terms are corrected or discarded. 
     mod_query = []
     for term in temp_query_1:
         if term in vocab_list:
@@ -77,9 +82,9 @@ while(query!="exit"):
             if corrections:
                 mod_query.append(list(corrections)[0])
     
-    #??????????
+    # If all terms is query are discarded, print appropriate message and continue
     if not mod_query:
-        print('Unable to find the correct term in')
+        print('No results found!')
         query = input("Enter query: ")
         continue
 

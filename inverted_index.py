@@ -11,9 +11,13 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.tokenize import word_tokenize
 import numpy as np
 
+# Path to folder containing inverted indices.
 path = './InvertedIndex/'
+
+# Path to folder containing raw data files.
 data_path = './Data/TelevisionNews/'
-vector_path = './Vectors/'
+
+# Retrieving list of names of raw data files.
 files = listdir(path)
 
 lem = WordNetLemmatizer()
@@ -21,18 +25,16 @@ lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
 
 
-
+# Function to get dictionary with terms as keys and list of positions as values
 def position_finder(list_of_words):
-    index = 0
-    temp = {}
-    for word in list_of_words:
-        k = lem.lemmatize(word)
-        if (k in temp):
-            temp[k].append(index)
+    position_dict = {}
+    for pos in range(len(list_of_words)):
+        if (list_of_words[pos] in position_dict):
+            position_dict[list_of_words[pos]].append(pos)
         else:
-            temp[k] = [index]
-        index += 1
-    return temp
+            position_dict[list_of_words[pos]] = [pos]
+        
+    return position_dict
 
 
 # Find the tf-idf matrix for all the terms and documents in the corpus.
@@ -49,8 +51,8 @@ def get_tfidf_matrix(dataset):
 # Construct individual inverted indices for all files in ./Data/TelevisionNews/
 def construct_inverted_index():
     
-    #Get the list of files in the path.
-    blocks  = listdir('./Data/TelevisionNews/')
+    # Get the list of files in the path.
+    blocks  = listdir(data_path)
 
     for i in blocks:
         
@@ -59,40 +61,38 @@ def construct_inverted_index():
 
         try:
             # Get the dataframe of info in csv file. 
-            csv = pd.read_csv('./Data/TelevisionNews/'+i)
+            csv = pd.read_csv(data_path+i)
         except:
             continue
 
-        #Row number in the dataframe.
+        # Row number in the dataframe.
         doc_id = 0
 
-        #Check for columns with snippets
+        # Check for columns with snippets
         if 'Snippet' not in csv.columns:
             continue
 
         print('Started construction of inverted index for block ',i)
 
-        #Add documents in the file to its BTree.
+        # Add documents in the file to its BTree.
         for doc in csv['Snippet']:
-            #the snippet is tokenized, then stop words and non-alphanumeric words are removed from this list and the remaining words are lemmatized.
+            # The snippet is tokenized, then stop words and non-alphanumeric words are removed from this list and the remaining words are lemmatized.
             temp_1 = [ lem.lemmatize(x) for x in word_tokenize(doc) if x.isalnum() and x not in stop_words ]
+            
             # temp2 = [lem.lemmatize(x) for x in word_tokenize(doc) ]
             # print(doc)
 
-            #Counter makes a dictionary of words in temp as key and with their frequency as the value
-            # temp = Counter(temp)
             s = ' '.join(temp_1)
 
             doc_list.append(s)
             doc_map.append((i,doc_id))
         
-            # temp_list = temp_1.split(' ')
-        
+            # Getting dictionary with term and their positions in temp_1        
             temp = position_finder(temp_1)
             no_of_terms = len(temp_1)
 
             for term, position_list in temp.items():
-                #adding term, doc_id, and count to the tree
+                #adding term, doc_id, list of positions and number of terms to the tree
                 tree_insert(B, [term, (doc_id, position_list, no_of_terms)])
             doc_id +=1
 
