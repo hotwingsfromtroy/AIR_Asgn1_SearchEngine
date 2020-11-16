@@ -1,7 +1,6 @@
 import pickle
 import pandas as pd
 import nltk
-#nltk.download()
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -13,6 +12,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from nltk.tokenize import word_tokenize
 import math
 import numpy as np
+import time
 
 path = './InvertedIndex/'
 data_path = './Data/TelevisionNews/'
@@ -23,203 +23,225 @@ lem = WordNetLemmatizer()
 lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
 
-def get_tfidf_matrix(dataset):
-    vectorizer = TfidfVectorizer(sublinear_tf=True)
-    vectorized_docs = vectorizer.fit_transform(dataset)
-    print(vectorized_docs)
-    names = vectorizer.get_feature_names()
-    tfidf_matrix = pd.DataFrame.sparse.from_spmatrix(vectorized_docs).T
-    tfidf_matrix.index = names
-    return tfidf_matrix, vectorizer
 
-def phrase_query(query):
-
-    term_frequency = dict()
-    length = 10
-
-    for i in files:
-        filename = i
-        docs = {}
-
-        with open(path + filename, 'rb') as infile:
-            B = pickle.load(infile)
-            common = []
-            for term in query:
-                docIDs = set()
-                key = tree_search(B, term)
-                if(key):
-                    # print(posting_list)
-                    docs[term] = {}
-                    no_of_items = key[1]
-                    for i in range(no_of_items):
-                        docIDs.add((key[2][i][0],key[2][i][2])) #length is a placeholder. this is where the document length needs to go. the rest of the code has been modified. 
-                        docs[term][key[2][i][0]] = key[2][i][1]
-                common.append(docIDs)
-
-            inter = common[0]               # for performing intersection
-            for j in common:
-                inter = inter & j
-
-            # inside inter, we get all row numbers in one file having all the terms in the query
-
-
-            for row in inter:  # for each row
-                print("0:",row[0])
-                print("1:",row[1])
-                identifier = (filename+'.csv',row[0])
-                check = []
-                for term in query:
-                    check.append(docs[term][row[0]])
-
-                temp = set(check[0])
-                for k in range(1, len(check)):
-                    for m in range(len(check[k])):
-                        check[k][m] -= k
-                    temp &= set(check[k])
-
-                tf = len(temp)
-                if(tf != 0): #len(temp) gives me the frequency of occurrence of the phrase in that doc. row gives me the doc. 
-                    term_frequency[identifier] = (1+math.log10(tf))/row[1]
-                else:
-                    term_frequency[identifier] = 0 
+#Searh for and compute tf-idf scores of documents for free text queries.
+def freetext_query(query, loaded_values):     
     
-    return term_frequency
+    #Load pickled values.
+    tfidf = loaded_values['tfidf']
+    doc_map = loaded_values['doc_map']
+    vectorizer = loaded_values['vectorizer']
+    vect_names = loaded_values['vect_names']
 
-
-
-
-
-def freetext_query(query):        # free text query
-    # print(query)
-    
+    #Result dictionary. Keys consist of unique document identifiers -> (FileName, RowNumber)
     doc_scores = dict()
-    matrix = ''
-    with open("tfidf_matrix", "rb") as matrix_file:
-        matrix = pickle.load(matrix_file)
-    
-    vectorizer = ''
-    with open("tfidf_vectorizer", "rb") as vect_file:
-        vectorizer = pickle.load(vect_file)
-    
-    doc_map = ''
-    with open("document_mapping", "rb") as doc_file:
-        doc_map = pickle.load(doc_file)
+   
+    #Compute the query vector to get the term weights.
+    query_vector = vectorizer.transform([' '.join(query)])
+    query_vector = pd.DataFrame.sparse.from_spmatrix(query_vector)
+    query_vector.columns = vect_names
 
-    query_string = ' '.join(query)
-    print(query_string)
-    query_vector = vectorizer.transform([query_string])
-    print(np.shape(query_vector))
-
-    doc_vectors = []
-
-    for i in files:
-        filename = i
-        docs = set()
+    for filename in files:
 
         with open(path + filename, 'rb') as infile:
             B = pickle.load(infile)
 
+            #Compute the scores for relevant documents term-wise.
             for term in query:
+                
+                #The term weight is the tf-idf weight of the term in the query vector.
+                term_weight = query_vector[term][0]
+
+                #Search for the term in the BTree.
                 key = tree_search(B, term)
-                if(key):
-                    # print(posting_list)
-
-                    no_of_items = key[1]
-                    for i in range(no_of_items):
-                        doc = key[2][i][0]
-                        docs.add(doc)
+                if(key): #If the term exists in the corpus
+                    for x in key[2]: #key[2] contains the posting list of the term. It is a list of tuples. 
                         
-                    
-                    for doc in docs:
-                        identifier = (filename+'.csv',doc)
-                        col = term
-                        row = doc_map.index(identifier)
-                        score = matrix[col][row]
+                        #Create the identifier for the document.
+                        identifier = (filename+'.csv',x[0])
 
+                        #Get the index corresonding to the document in the tf-idf matrix.
+                        row = get_index(doc_map, identifier)
+
+                        #Add to the score of the document if it is has already been encountered, otherwise create a new key and assign the score.
+                        #The score is based on the term weight in the query vector and the tf-idf score of the term in the document vector.
                         if identifier in doc_scores:
-                            doc_scores[identifier] += score
+                            doc_scores[identifier] += (term_weight * tfidf[term][row])
                         else:
-                            doc_scores[identifier] = score
-                        #query -> malaysia sand dunes
-                        #list -> [((MSNBC01, 2),0.534),((CNN02,4),0.765)]
+                            doc_scores[identifier] = (term_weight * tfidf[term][row])
+
+          
 
     return doc_scores
 
 
+def phrase_query(query):
+
+    #Result dictionary.
+    term_frequency = dict()
+    query_length = len(query)
+    
+    #Dictionary containing all documents that contain at least one of the terms in the phrase, keyed by unique identifier.
+    docs = dict()
+
+    start = time.perf_counter()
+    for filename in files:
+        with open(path + filename, 'rb') as infile:
+
+            #B is the BTree for filename.
+            B = pickle.load(infile)
+            for term in query:
+
+                #Search for the term in the BTree.
+                key = tree_search(B, term)
+                if(key): #If the term exists
+                    #key[2] contains the posting list of the term. It is a list of tuples.
+                    #Each tuple contains the row number of the documents and the list of positions in which the term is found.
+                    for x in key[2]:
+                        
+                        #Create the unique identifier for the document -> (FileName, RowNumber)
+                        identifier = (filename+'.csv',x[0])
+
+                        #If the document has already been encountered, 
+                        #increment the number of relevant terms it contains, and append the list of positions of the current term.
+                        if identifier in docs:
+                            docs[identifier]['positions'].append(x[1])
+                            docs[identifier]['terms'] += 1
+                        
+                        #Otherwise, store the length of the document, the list of positions of the term, and the number of relevant terms.
+                        else:
+                            docs[identifier] = dict()
+                            docs[identifier]['terms'] = 1
+                            docs[identifier]['length'] = x[2]
+                            docs[identifier]['positions'] = [x[1]]
+
+    end = time.perf_counter()
+    print("Time taken to find all matching docs: ", end-start)
+    print("Number of docs: ",len(docs))
+    
+    #Dictionary containing the frequencies of occurrence of the phrase in all relevant documents.
+    doc_frequencies = dict()
+                           
+    start_out = time.perf_counter()    
+    for identifier in docs.keys():
+
+        #If the document contains all the terms in the phrase, check if the terms are in the correct order and positions.
+        if docs[identifier]['terms'] == query_length:
+            print("########### NEW DOC #############")
+            start = time.perf_counter()
+
+            #Frequency of occurrence of the phrase in the document.
+            frequency = 0
+
+            #Variable pointing to the positions of the terms after the first.
+            second = 0
+
+            #List of positions of the first phrase term.
+            static = docs[identifier]['positions'][0]  
+
+            for first in static:
+                print("first:", first)
+
+                #Indicates the term number in the phrase.
+                array = 1
+
+                while(array<query_length):
+
+                    #If the array for the term is not empty
+                    if len(docs[identifier]['positions'][array]) != 0:
+                        #Store the first value in the position list of the term.
+                        second = docs[identifier]['positions'][array][0]
+                        print("second:",second)
+                        notempty = 1
+
+                        #If the term occurs before the first term, move the pointer to the next occurrence.
+                        while(second < first and notempty == 1):
+                            print("second less than first")
+                            docs[identifier]['positions'][array].pop(0)
+                            if len(docs[identifier]['positions'][array]) == 0:
+                                notempty = 0
+                            else:
+                                second = docs[identifier]['positions'][array][0]
+                    
+                    #If the term is the right distance away from the first term, remove the position, and move to the next term array.
+                    if (second - first) == array:
+                        print("match")
+                        docs[identifier]['positions'][array].pop(0)
+                        array+=1
+                        if array == query_length:
+                            print("complete match")
+                            frequency += 1
+                    
+                    #Otherwise move to the next position in the first term array.
+                    else:
+                        array = query_length
+                    
+            #If the phrase occurs in the document, store the frequency.
+            if frequency != 0:
+                doc_frequencies[identifier] = frequency
+
+            end = time.perf_counter()
+            print("Time taken to find the frequency for one doc: ",end-start)
+        
+    end_out = time.perf_counter()
+    print("Total time taken to find the frequencies of phrases in documents: ", end_out - start_out)
+
+    if len(doc_frequencies)!=0:
+
+        #Compute the score for each document based on the frequence of occurrence of the phrase, normalised by the document length.
+        for identifier in doc_frequencies.keys():
+            term_frequency[identifier] = (1+ math.log10(doc_frequencies[identifier]))/(docs[identifier]['length']+1-query_length)
+                
+
+    return term_frequency
 
 
-def rank(input, top = 10, isphrase = False):
+#Find the index of the document in the tf-idf matrix using binary search.
+def get_index(doc_map, identifier):
+    
+    l = 0
+    r = len(doc_map)-1
+    
+    while(l<=r):
+        mid = (l+r)//2
+        if doc_map[mid] == identifier:
+            return mid
+        elif doc_map[mid] < identifier:
+            l = mid+1
+        else:
+            r = mid-1
+    
+    return -1
+
+
+#Rank the search results.
+def rank(input, loaded_values, k = 10, isphrase = False):
+    
     if isphrase == True:
         scores = phrase_query(input)
     else:
-        scores = freetext_query(input)
-
+        scores = freetext_query(input, loaded_values)
+    
+    #Sort the results by score, and return the top k.
     df = pd.DataFrame.from_dict(scores, orient = "index",columns = ['Score'])
-    #df = df['Score'].apply(lambda x: math.sqrt(x))
-    df = df.sort_values('Score', ascending = False).head(top)
+    df = df.sort_values('Score', ascending = False).head(k)
+    time.perf_counter()
+
     return df
 
 
-
+#Find the matching snippets in the CSV files based on the document identifiers.
 def fetch_snippets(identifiers):
     snippets = []
+
     for identifier in identifiers:
-        print(identifier)
         file_addr = data_path+identifier[0]
         row_no = int(identifier[1])
         csv_file = pd.read_csv(file_addr)
         snippet = csv_file['Snippet'][row_no]
-        snippets.append(snippet)
+        snippets.append((identifier,snippet))
+        
     return snippets
 
-
-
-# d = [   
-#         "this is some trial text",
-#         "i am trying to figure out how to use some tfidf modules in python",
-#         "it seems like it would be easier to write that code myself",
-#         "i am not entirely sure what sort of sentence to give to accurately judge how it works",
-#         "guess i will just adjust the sentence based on my requirements"
-#     ]
-
-# matrix, vect = get_tfidf_matrix(d)
-
-# query_string = ["this is the trial sentence"]
-
-# qv= vect.transform(query_string)
-
-# # print("Matrix")
-# # print(matrix)
-# # print("Query Vect")
-# # print(qv)
-# #print(np.shape(qv))
-
-# string = query_string[0].split(" ")
-
-# alldocs = []
-# for s in string:
-#     for trialdoc in d:
-#         if s in trialdoc:
-#             alldocs.append(d.index(trialdoc))
-
-# alldocs = set(alldocs)
-
-# for a in alldocs:
-#     dv = matrix[a].to_frame().T
-#     score = cosine_similarity(qv,dv)
-#     print(a, score)
-#     print("#########################")
-
-# l = [
-#         [1,2,3,4,5],
-#         [6,7,8,9,10],
-#         [11,12,13,14,15]
-#     ]
-# df = pd.DataFrame(l)
-# df.index = ['0','1','2']
-# df.columns = ['a','b','c','d','e']
-# #print(df)
-# row = [df.loc['0']]
-# print(np.shape(row))
 
 
