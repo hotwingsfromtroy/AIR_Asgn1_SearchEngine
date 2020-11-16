@@ -15,6 +15,7 @@ from collections import Counter
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.tokenize import word_tokenize
 import time
+from word_error_correction import get_correction
 path = './InvertedIndex/'
 
 lem = WordNetLemmatizer()
@@ -26,13 +27,31 @@ files = listdir(path)
 
 data_path = './Data/TelevisionNews/'
 
+tfidf_m = ''
+with open("tfidf_matrix", "rb") as matrix_file:
+    tfidf_m = pickle.load(matrix_file)
 
+doc_m = ''
+with open("document_mapping", "rb") as doc_file:
+    doc_m = pickle.load(doc_file)
+
+vect = ''
+with open("tfidf_vectorizer", "rb") as vect_file:
+    vect = pickle.load(vect_file)
+
+loaded_values = dict()
+loaded_values['tfidf'] = tfidf_m
+loaded_values['doc_map'] = doc_m
+loaded_values['vectorizer'] = vect
+loaded_values['vect_names'] = vect.get_feature_names()
+
+vocab_list = tfidf_m.columns.tolist()
 
 query = input("Enter query: ")
 while(query!="exit"):
     start = time.perf_counter()
 
-    if(query!="phrase query"):
+    if(query!="phrase"):
         isphrase = False
         
     else:
@@ -41,19 +60,44 @@ while(query!="exit"):
         
     
     temp_query_1 = [lem.lemmatize(x.lower()) for x in word_tokenize(query) if x.isalnum() and x not in stop_words]
-    result = rank(temp_query_1, isphrase = isphrase)
-    print(result)
+
+    mod_query = []
+    for term in temp_query_1:
+        if term in vocab_list:
+            mod_query.append(term)
+        else:
+            corrections = get_correction(term, vocab_list, 3)
+            if corrections:
+                mod_query.append(list(corrections)[0])
+    
+    
+    
+    if not mod_query:
+        print('Unable to compute. Task ditched.')
+        query = input("Enter query: ")
+        continue
+
+
+    print('Fetching results for query ', end = '')
+    if isphrase:
+        print('phrase ', end = '')
+    
+    print('"'+ ' '.join(mod_query)+'"')
+    
+    result = rank(mod_query, loaded_values, isphrase = isphrase)
+    #print(result)
 
     ids = result.index.values.tolist()
-    print(ids)
+    #print(ids)
     snippets = fetch_snippets(ids)
     end = time.perf_counter()
     
     for snippet in snippets:
-        print(snippet)
+        print("Identifier: ",snippet[0])
+        print(snippet[1])
         print()
     
-    print("TIME TAKEN TO RETRIEVE SEARCH RESULTS: ", end-start)
+    print("TOTAL TIME TAKEN TO RETRIEVE SEARCH RESULTS: ", end-start)
     print()
     print()
     query = input("Enter query: ")

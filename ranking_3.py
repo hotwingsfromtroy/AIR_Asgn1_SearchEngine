@@ -24,43 +24,14 @@ lem = WordNetLemmatizer()
 lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
 
-
-def freetext_query(query, loaded_values, top = 10):        # free text query
-    # print(query)
-    
-    tfidf = loaded_values['tfidf']
-    doc_map = loaded_values['doc_map']
-    vectorizer = loaded_values['vectorizer']
-    vect_names = loaded_values['vect_names']
-
-    doc_scores = dict()
-   
-    query_vector = vectorizer.transform([' '.join(query)])
-    query_vector = pd.DataFrame.sparse.from_spmatrix(query_vector)
-    query_vector.columns = vect_names
-
-    for i in files:
-        filename = i 
-        #docs = set()
-        with open(path + filename, 'rb') as infile:
-            B = pickle.load(infile)
-
-            for term in query:
-                term_weight = query_vector[term][0]
-                key = tree_search(B, term)
-                if(key):
-                    for x in key[2]:
-                        identifier = (filename+'.csv',x[0])
-                        row = get_index(doc_map, identifier)
-                        if identifier in doc_scores:
-                            doc_scores[identifier] += (term_weight * tfidf[term][row])
-                        else:
-                            doc_scores[identifier] = (term_weight * tfidf[term][row])
-
-          
-
-    return doc_scores
-
+def get_tfidf_matrix(dataset):
+    vectorizer = TfidfVectorizer(sublinear_tf=True)
+    vectorized_docs = vectorizer.fit_transform(dataset)
+    print(vectorized_docs)
+    names = vectorizer.get_feature_names()
+    tfidf_matrix = pd.DataFrame.sparse.from_spmatrix(vectorized_docs).T
+    tfidf_matrix.index = names
+    return tfidf_matrix, vectorizer
 
 def phrase_query(query, loaded_values):
 
@@ -167,6 +138,43 @@ def get_index(doc_map, identifier):
     return -1
 
 
+
+def freetext_query(query, loaded_values, top = 10):        # free text query
+    # print(query)
+    
+    tfidf = loaded_values['tfidf']
+    doc_map = loaded_values['doc_map']
+
+    doc_scores = dict()
+    # query_dict = dict()
+    # for term in query:
+    #     query_dict[term] = idf.loc[term,0]
+
+    for i in files:
+        filename = i 
+        #docs = set()
+        with open(path + filename, 'rb') as infile:
+            B = pickle.load(infile)
+
+            for term in query:
+                key = tree_search(B, term)
+                if(key):
+                    for x in key[2]:
+                        identifier = (filename+'.csv',x[0])
+                        row = get_index(doc_map, identifier)
+                        if identifier in doc_scores:
+                            doc_scores[identifier] += tfidf[term][row]
+                        else:
+                            doc_scores[identifier] = tfidf[term][row]
+
+          
+
+    return doc_scores
+  
+
+
+
+
 def rank(input, loaded_values, top = 10, isphrase = False):
     if isphrase == True:
         scores = phrase_query(input, loaded_values)
@@ -185,6 +193,7 @@ def rank(input, loaded_values, top = 10, isphrase = False):
     return df
 
 
+
 def fetch_snippets(identifiers):
     snippets = []
     for identifier in identifiers:
@@ -197,4 +206,62 @@ def fetch_snippets(identifiers):
     return snippets
 
 
+
+# d = [   
+#         "this is some trial text",
+#         "i am trying to figure out how to use some tfidf modules in python",
+#         "it seems like it would be easier to write that code myself",
+#         "i am not entirely sure what sort of sentence to give to accurately judge how it works",
+#         "guess i will just adjust the sentence based on my requirements"
+#     ]
+
+# matrix, vect = get_tfidf_matrix(d)
+
+# query_string = ["this is the trial sentence"]
+
+# qv= vect.transform(query_string)
+
+# # print("Matrix")
+# # print(matrix)
+# # print("Query Vect")
+# # print(qv)
+# #print(np.shape(qv))
+
+# string = query_string[0].split(" ")
+
+# alldocs = []
+# for s in string:
+#     for trialdoc in d:
+#         if s in trialdoc:
+#             alldocs.append(d.index(trialdoc))
+
+# alldocs = set(alldocs)
+
+# for a in alldocs:
+#     dv = matrix[a].to_frame().T
+#     score = cosine_similarity(qv,dv)
+#     print(a, score)
+#     print("#########################")
+
+# l = [
+#         [1,2,3,4,5],
+#         [6,7,8,9,10],
+#         [11,12,13,14,15]
+#     ]
+# df = pd.DataFrame(l)
+# df.index = ['0','1','2']
+# df.columns = ['a','b','c','d','e']
+# #print(df)
+# row = [df.loc['0']]
+# print(np.shape(row))
+
+# df = pd.DataFrame()
+# df.columns = ['t','f']
+# print(df)
+
+# stop_words = set(stopwords.words('english'))
+
+# q = "france, germany"
+# q = [lem.lemmatize(x.lower()) for x in word_tokenize(q) if x.isalnum() and x not in stop_words]
+# print(q)
 

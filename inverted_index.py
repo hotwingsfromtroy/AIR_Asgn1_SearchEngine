@@ -10,6 +10,7 @@ from btree_implementation_mk_IV import BTree, tree_insert, print_tree, store_tre
 from collections import Counter
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.tokenize import word_tokenize
+import numpy as np
 
 path = './InvertedIndex/'
 data_path = './Data/TelevisionNews/'
@@ -35,6 +36,21 @@ def position_finder(list_of_words):
     return temp
 
 
+def get_idf_matrix(terms, docs):
+    n = len(docs)
+    idf_dict = dict()
+    for term in terms:
+        no_of_docs = 0
+        for doc in docs:
+            if term in doc:
+                no_of_docs+=1
+        idf_dict[term] = np.log(n/no_of_docs)
+    
+    idf_matrix = pd.DataFrame.from_dict(idf_dict, orient = 'index')
+    
+    return idf_matrix
+
+    
 def get_tfidf_matrix(dataset):
     vectorizer = TfidfVectorizer(sublinear_tf=True)
     vectorized_docs = vectorizer.fit_transform(dataset)
@@ -42,7 +58,8 @@ def get_tfidf_matrix(dataset):
     names = vectorizer.get_feature_names()
     tfidf_matrix = pd.DataFrame.sparse.from_spmatrix(vectorized_docs)
     tfidf_matrix.columns = names
-    return tfidf_matrix, vectorizer
+    #get_idf_matrix(names,dataset)
+    return tfidf_matrix, names
 
 
 #function to construct inverted index for all files in ./Data/TelevisionNews/ folder
@@ -106,28 +123,24 @@ def construct_inverted_index():
     with open("document_mapping","wb") as outfile:
         pickle.dump(doc_map, outfile)
 
-    matrix, vect = get_tfidf_matrix(doc_list)
+    matrix, names = get_tfidf_matrix(doc_list)
     #print(matrix)
     print("constructed tfidf matrix")
     with open("tfidf_matrix","wb") as outfile:
         pickle.dump(matrix, outfile)
         print("Dumped matrix.")
     
-    with open("tfidf_vectorizer","wb") as outfile:
-        pickle.dump(vect, outfile)
-        print("Dumped vectorizer.")
+    idf = get_idf_matrix(names,doc_list)
+    print(idf)
+    with open("idf_matrix","wb") as outfile:
+        pickle.dump(idf, outfile)
+        print("Dumped idf matrix.")
+    
+    # with open("tfidf_vectorizer","wb") as outfile:
+    #     pickle.dump(vect, outfile)
+    #     print("Dumped vectorizer.")
 
     print('stop')
-
-
-
-# d = [   
-#         "this is some trial text",
-#         "i am trying to figure out how to use some tfidf modules in python",
-#         "it seems like it would be easier to write that code myself",
-#         "i am not entirely sure what sort of sentences to give to accurately judge how it works",
-#         "guess i will just adjust the sentences based on my requirements"
-#     ]
 
 construct_inverted_index()
 
