@@ -115,10 +115,6 @@ def phrase_query(query):
                             docs[identifier]['length'] = x[2]
                             docs[identifier]['positions'] = [x[1]]
 
-    end = time.perf_counter()
-    print("Time taken to find all matching docs: ", end-start)
-    print("Number of docs: ",len(docs))
-    
     #Dictionary containing the frequencies of occurrence of the phrase in all relevant documents.
     doc_frequencies = dict()
                            
@@ -127,21 +123,19 @@ def phrase_query(query):
 
         #If the document contains all the terms in the phrase, check if the terms are in the correct order and positions.
         if docs[identifier]['terms'] == query_length:
-            print("########### NEW DOC #############")
             start = time.perf_counter()
 
             #Frequency of occurrence of the phrase in the document.
             frequency = 0
 
-            #Variable pointing to the positions of the terms after the first.
-            second = 0
-
             #List of positions of the first phrase term.
             static = docs[identifier]['positions'][0]  
 
             for first in static:
-                print("first:", first)
-
+                
+                #Variable pointing to the positions of the terms after the first.
+                second = 0
+                
                 #Indicates the term number in the phrase.
                 array = 1
 
@@ -151,12 +145,10 @@ def phrase_query(query):
                     if len(docs[identifier]['positions'][array]) != 0:
                         #Store the first value in the position list of the term.
                         second = docs[identifier]['positions'][array][0]
-                        print("second:",second)
                         notempty = 1
 
                         #If the term occurs before the first term, move the pointer to the next occurrence.
                         while(second < first and notempty == 1):
-                            print("second less than first")
                             docs[identifier]['positions'][array].pop(0)
                             if len(docs[identifier]['positions'][array]) == 0:
                                 notempty = 0
@@ -165,11 +157,9 @@ def phrase_query(query):
                     
                     #If the term is the right distance away from the first term, remove the position, and move to the next term array.
                     if (second - first) == array:
-                        print("match")
                         docs[identifier]['positions'][array].pop(0)
                         array+=1
                         if array == query_length:
-                            print("complete match")
                             frequency += 1
                     
                     #Otherwise move to the next position in the first term array.
@@ -181,10 +171,8 @@ def phrase_query(query):
                 doc_frequencies[identifier] = frequency
 
             end = time.perf_counter()
-            print("Time taken to find the frequency for one doc: ",end-start)
         
     end_out = time.perf_counter()
-    print("Total time taken to find the frequencies of phrases in documents: ", end_out - start_out)
 
     if len(doc_frequencies)!=0:
 
@@ -240,7 +228,7 @@ def fetch_snippets(identifiers):
         csv_file = pd.read_csv(file_addr)
         snippet = csv_file['Snippet'][row_no]
         snippets.append((identifier,snippet))
-        
+
     return snippets
 
 

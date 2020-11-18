@@ -15,6 +15,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.tokenize import word_tokenize
 import time
 from word_error_correction import get_correction
+import json
 path = './InvertedIndex/'
 
 lem = WordNetLemmatizer()
@@ -25,6 +26,15 @@ stop_words = set(stopwords.words('english'))
 files = listdir(path)
 
 data_path = './Data/TelevisionNews/'
+
+freetext = []
+phrase = []
+
+with open('queries.json','r') as json_file:
+    queries_data = json.load(json_file)
+    freetext = queries_data['freetext']
+    phrase = queries_data['phrase']
+
 
 vocab = ''
 with open('tfidf_matrix', 'rb') as infile:
@@ -55,26 +65,19 @@ loaded_values['vect_names'] = vect.get_feature_names()
 #Find the list of all words in the corpus.
 vocab_list = tfidf_m.columns.tolist()
 
+totals_f = []
+totals_p = []
 
+ft_dict = dict()
+pt_dict = dict()
 
 #MAIN MODULE
-query = input("Enter Query (Enter 'P' for Phrase Queries. | Enter 'Exit' to exit.): ")
-while(query!="exit"):
-    
+for text in freetext:
     start = time.perf_counter()
-
-    if(query.lower()!="p"):
-        isphrase = False
-    else:
-        query = input("Enter Phrase: ")
-        isphrase = True
-        
-    #Pre-process query.
-    temp_query_1 = [lem.lemmatize(x.lower()) for x in word_tokenize(query) if x.isalnum() and x not in stop_words]
-
-    # Getting modified query where faulty query terms are corrected or discarded. 
+    
+    temp_query = [lem.lemmatize(x.lower()) for x in word_tokenize(text) if x.isalnum() and x not in stop_words]
     mod_query = []
-    for term in temp_query_1:
+    for term in temp_query:
         if term in vocab_list:
             mod_query.append(term)
         else:
@@ -82,42 +85,53 @@ while(query!="exit"):
             if corrections:
                 mod_query.append(list(corrections)[0])
     
-    # If all terms is query are discarded, print appropriate message and continue
-    if not mod_query:
-        print('Sorry, no results were found.')
-        query = input("Enter Query (Enter 'P' for Phrase Queries. | Enter 'Exit' to exit.): ")
-        continue
-
-    #Print the corrected query.
-    print()
-    print('Fetching results for query ', end = '')
-    if isphrase:
-        print('phrase ', end = '')
-    print('"'+ ' '.join(mod_query)+'"')
-    print()
-    
-    #Find the ranked results.
-    result = rank(mod_query, loaded_values, isphrase = isphrase)
-
-    #Get the document identifiers for the results.
+    result = rank(mod_query, loaded_values, k = 100, isphrase = False)
     ids = result.index.values.tolist()
-
-    #Fetch the result snippets.
     snippets = fetch_snippets(ids)
-
-    end = time.perf_counter()
-    
+    ft_results = []
     for snippet in snippets:
-        print("Identifier: ",snippet[0])
-        print(snippet[1])
-        print()
+        ft_results.append(snippet[1])
     
-    print("TOTAL TIME TAKEN TO RETRIEVE SEARCH RESULTS: ", end-start)
-    print()
-    print()
-    query = input("Enter Query (Enter 'P' for Phrase Queries. | Enter 'Exit' to exit.): ")
+    ft_dict[text] = ft_results
+    
+    end = time.perf_counter()
+    totals_f.append(end-start)
 
+f_avg = sum(totals_f)/len(totals_f)
+ft_dict['Avg Time'] = f_avg
 
+for text in phrase:
+    start = time.perf_counter()
+    
+    temp_query = [lem.lemmatize(x.lower()) for x in word_tokenize(text) if x.isalnum() and x not in stop_words]
+    mod_query = []
+    for term in temp_query:
+        if term in vocab_list:
+            mod_query.append(term)
+        else:
+            corrections = get_correction(term, vocab_list, 3)
+            if corrections:
+                mod_query.append(list(corrections)[0])
+    
+    result = rank(mod_query, loaded_values, k = 100, isphrase = True)
+    ids = result.index.values.tolist()
+    snippets = fetch_snippets(ids)
+    pt_results = []
+    for snippet in snippets:
+        pt_results.append(snippet[1])
+    
+    pt_dict[text] = pt_results
+    
+    end = time.perf_counter()
+    totals_p.append(end-start)
 
+p_avg = sum(totals_p)/len(totals_p)
+pt_dict['Avg Time'] = p_avg
 
+master_dict = dict()
+master_dict['freetext'] = ft_dict
+master_dict['phrase'] = pt_dict
 
+with open('results.json','w') as json_file:
+    json.dump(master_dict, json_file, indent = 4)
+        

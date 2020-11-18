@@ -1,17 +1,15 @@
-# AIR_Asgn1_SearchEngine
+# AIR Assignment
 
-Three implementations of btree made.  
-Version I - user defined classes for everything and pickling for local storage. Size of test file - 7KB  
-Version II - only a single user defined class, and pickling for local storage. Size of test file - 5KB  
-Version III - nested dictionaries, with json as the local storage. Size of test file - 8KB  
-Version IV - nested lists, with pickling(data serialization). Size of test file - 4KB
+btree_implementation_mk_IV.py contains the code for the B-Tree implementation.  
+inverted_index.py contains code to construct inverted index and tfidf matix.  
+word_error_correction.py contains code to implement word error correction.  
+ranking.py code to implement scoring and ranking.  
+client.py interfaces with the user.  
 
-Serialization better than json. User readability isn't a concern here. We can go with nested dictionaries with pickling. Maybe another method of serialization if it turns out to be better.
-Check avro and protobuff for this.  
+To construct inverted indices and the tf-idf matrix, run the inverted_index.py file.  
+To perform searches, run the client.py file.  
 
-Of course, all of this is useless if it turns out that a plain dictionary(without implementing btree) works out better. Don't know if there are optimizations to take care of cases with large number keys.
-Python dictionary is implemented using hash tables. Unless our btree functions are really inefficient, it should work out better that hash table method for large data sets. We can either stick to btree and say we're keeping scalbility in mind or just work with the hash table one.
+Evaluation can be performed on the given results by running evaluation.py. To perform evaluation for a different set of queries, change the queries in the queries.json file, run get_eval_results.py, and then run evaluation.py.
 
+Ensure that the file structure is appropriate (all the files must be in the same folder).
 
-# Immediate To-Do
-- reduce the number of dictionaries in the inverted index, replace with lists. A term-docid pair as a dictionary takes up around 200. List is only ~50-60. -- DONE
